@@ -1,7 +1,7 @@
 package com.bitbus.auctiondraft.scraper;
 
-public interface DataScraper {
+public interface DataScraper<T> {
 
-    void scrape();
+    T scrape();
 
 }
