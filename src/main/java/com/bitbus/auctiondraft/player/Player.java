@@ -7,14 +7,17 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import com.bitbus.auctiondraft.team.Team;
 
 import lombok.Data;
 
 @Entity
+@Table(indexes = {@Index(name = "uidx_name_position_team", columnList = "name, team_id, position", unique = true)})
 @Data
 public class Player {
 

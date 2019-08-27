@@ -9,7 +9,6 @@ import lombok.Data;
 @Entity
 @Data
 public class Team {
-
     @Id
     @Column(name = "team_id")
     private int id;
@@ -22,5 +21,11 @@ public class Team {
 
     @Column(nullable = false, unique = true, length = 3)
     private String abbreviation;
+
+    public Team() {}
+
+    public Team(int id) {
+        this.id = id;
+    }
 
 }
