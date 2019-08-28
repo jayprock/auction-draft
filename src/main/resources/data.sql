@@ -112,7 +112,7 @@ insert into player (player_id, name, position, team_id) values(46, 'Mark Ingram 
 insert into player (player_id, name, position, team_id) values(47, 'Baker Mayfield', 'QB', 8);
 insert into player (player_id, name, position, team_id) values(48, 'Sony Michel', 'RB', 21);
 insert into player (player_id, name, position, team_id) values(49, 'O.J. Howard', 'TE', 30);
-insert into player (player_id, name, position, team_id) values(50, 'Andrew Luck', 'QB', 14);
+insert into player (player_id, name, position, team_id, exclusion_reason) values(50, 'Andrew Luck', 'QB', 14, 'RETIREMENT');
 insert into player (player_id, name, position, team_id) values(51, 'Phillip Lindsay', 'RB', 10);
 insert into player (player_id, name, position, team_id) values(52, 'David Montgomery', 'RB', 6);
 insert into player (player_id, name, position, team_id) values(53, 'Evan Engram', 'TE', 23);
@@ -157,7 +157,7 @@ insert into player (player_id, name, position, team_id) values(91, 'Stephen Gost
 insert into player (player_id, name, position, team_id) values(92, 'Christian Kirk', 'WR', 1);
 insert into player (player_id, name, position, team_id) values(93, 'Corey Davis', 'WR', 31);
 insert into player (player_id, name, position, team_id) values(94, 'Sammy Watkins', 'WR', 16);
-insert into player (player_id, name, position, team_id) values(95, 'Lamar Miller', 'RB', 13);
+insert into player (player_id, name, position, team_id, exclusion_reason) values(95, 'Lamar Miller', 'RB', 13, 'INJURY');
 insert into player (player_id, name, position, team_id) values(96, 'Josh Gordon', 'WR', 21);
 insert into player (player_id, name, position, team_id) values(97, 'Miles Sanders', 'RB', 26);
 insert into player (player_id, name, position, team_id) values(98, 'Latavius Murray', 'RB', 22);

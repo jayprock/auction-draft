@@ -37,4 +37,8 @@ public class Player {
     @Column(length = 3)
     private Position position;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = true)
+    private ExclusionReason exclusionReason;
+
 }
