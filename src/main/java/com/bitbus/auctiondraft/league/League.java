@@ -8,7 +8,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import lombok.Data;
+
 @Entity
+@Data
 public class League {
 
     @Id
@@ -20,7 +23,13 @@ public class League {
     private String name;
 
     @Column(nullable = false)
-    private int size;
+    private int numTeams;
+
+    @Column(nullable = false)
+    private int rosterSize;
+
+    @Column(nullable = false)
+    private int auctionBudget;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

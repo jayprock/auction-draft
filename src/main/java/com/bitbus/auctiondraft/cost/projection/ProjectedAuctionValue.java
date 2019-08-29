@@ -23,7 +23,7 @@ public class ProjectedAuctionValue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "auction_value_id")
+    @Column(name = "projected_auction_value_id")
     private long id;
 
     @Column(nullable = false)

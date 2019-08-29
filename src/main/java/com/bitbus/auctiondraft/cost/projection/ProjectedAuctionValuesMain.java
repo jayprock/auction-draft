@@ -15,7 +15,8 @@ import com.bitbus.auctiondraft.AuctionDraftApplication;
 import com.bitbus.auctiondraft.Profiles;
 import com.bitbus.auctiondraft.cost.actual.AverageAuctionValue;
 import com.bitbus.auctiondraft.cost.actual.AverageAuctionValueRepository;
-import com.bitbus.auctiondraft.league.Platform;
+import com.bitbus.auctiondraft.league.League;
+import com.bitbus.auctiondraft.league.LeagueRepository;
 import com.bitbus.auctiondraft.player.ExclusionReason;
 import com.bitbus.auctiondraft.player.Position;
 
@@ -25,17 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProjectedAuctionValuesMain {
 
-    private static final int LEAGUE_SIZE = 12;
-    private static final int AUCTION_BUDGET = 200;
-    private static final int ROSTER_SIZE = 15;
-    private static final Platform LEAGUE_PLATFORM = Platform.YAHOO;
+    private static final long LEAGUE_ID = 1;
+    private static final BigDecimal MAX_COST_INCREASE = BigDecimal.TEN;
 
-    private static final int MIN_QBS = 12;
-    private static final int MIN_RBS = 18;
-    private static final int MIN_WRS = 18;
-    private static final int MIN_TES = 12;
-    private static final int MIN_DEF = 12;
-    private static final int MIN_KS = 12;
+    @Autowired
+    private LeagueRepository leagueRepo;
+
+    @Autowired
+    private ProjectedAuctionValueRepository projAuctionValueRepo;
 
     @Autowired
     private AverageAuctionValueRepository avgAuctionValueRepo;
@@ -51,12 +49,15 @@ public class ProjectedAuctionValuesMain {
     }
 
     private void doWork() {
+        log.info("Looking up League...");
+        League league = leagueRepo.findById(LEAGUE_ID).get();
+
         log.info("Fetching all the Yahoo average auction values");
-        List<AverageAuctionValue> yahooAverageAVs = avgAuctionValueRepo.findByPlatform(LEAGUE_PLATFORM);
-
+        List<AverageAuctionValue> yahooAverageAVs = avgAuctionValueRepo.findByPlatform(league.getPlatform());
         Collections.sort(yahooAverageAVs, (av1, av2) -> av2.getAverageCost().compareTo(av1.getAverageCost()));
+        log.info("Found {} Yahoo average auction values", yahooAverageAVs.size());
 
-        int maxDraftablePlayers = LEAGUE_SIZE * ROSTER_SIZE;
+        int maxDraftablePlayers = league.getNumTeams() * league.getRosterSize();
         log.info("Determining the {} draftable players", maxDraftablePlayers);
         List<AverageAuctionValue> draftablePlayers = new ArrayList<>();
         int kCount = 0;
@@ -68,52 +69,71 @@ public class ProjectedAuctionValuesMain {
             }
             Position position = av.getPlayer().getPosition();
             if (position == Position.K) {
-                if (kCount < MIN_KS) {
+                if (kCount < league.getNumTeams()) {
                     draftablePlayers.add(av);
                     kCount++;
                 }
             } else if (position == Position.DEF) {
-                if (defCount < MIN_DEF) {
+                if (defCount < league.getNumTeams()) {
                     draftablePlayers.add(av);
                     defCount++;
                 }
-            } else if (draftablePlayers.size() < (maxDraftablePlayers - MIN_KS - MIN_DEF)) {
+            } else if (draftablePlayers.size() < (maxDraftablePlayers - (league.getNumTeams() - kCount)
+                    - (league.getNumTeams() - defCount))) {
                 draftablePlayers.add(av);
             }
             if (draftablePlayers.size() == maxDraftablePlayers) {
                 break;
             }
         }
+        log.info("Found {} draftable players", draftablePlayers.size());
 
         log.info("Performing checks against the draftable players");
-        assertEnoughByPosition(draftablePlayers, Position.QB, MIN_QBS);
-        assertEnoughByPosition(draftablePlayers, Position.RB, MIN_RBS);
-        assertEnoughByPosition(draftablePlayers, Position.WR, MIN_WRS);
-        assertEnoughByPosition(draftablePlayers, Position.TE, MIN_TES);
-        assertEnoughByPosition(draftablePlayers, Position.K, MIN_KS);
-        assertEnoughByPosition(draftablePlayers, Position.DEF, MIN_DEF);
+        assertEnoughByPosition(draftablePlayers, Position.QB, league.getNumTeams());
+        assertEnoughByPosition(draftablePlayers, Position.RB, league.getNumTeams() * 3);
+        assertEnoughByPosition(draftablePlayers, Position.WR, league.getNumTeams() * 3);
+        assertEnoughByPosition(draftablePlayers, Position.TE, league.getNumTeams());
+        assertEnoughByPosition(draftablePlayers, Position.K, league.getNumTeams());
+        assertEnoughByPosition(draftablePlayers, Position.DEF, league.getNumTeams());
 
         log.info("Evaluating the total money allocated to these draftable players");
         BigDecimal actualTotalMoney = draftablePlayers.stream() //
                 .map(av -> av.getAverageCost()) //
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal expectedTotalMoney = new BigDecimal(AUCTION_BUDGET).multiply(new BigDecimal(LEAGUE_SIZE));
+        BigDecimal expectedTotalMoney = new BigDecimal(league.getAuctionBudget() * league.getNumTeams());
         log.info("Actual total money is {}, expected total money is {}", actualTotalMoney, expectedTotalMoney);
 
         log.info("Scaling costs...");
         BigDecimal scaleFactor = expectedTotalMoney.divide(actualTotalMoney, 4, RoundingMode.HALF_UP);
         log.info("Scale Factor: " + scaleFactor);
 
-        BigDecimal newActualTotalMoney = BigDecimal.ZERO;
+        List<ProjectedAuctionValue> projAVs = new ArrayList<>();
+        int totalProjectedCost = 0;
         for (AverageAuctionValue draftablePlayer : draftablePlayers) {
-            BigDecimal scaledCost =
-                    draftablePlayer.getAverageCost().multiply(scaleFactor).setScale(0, RoundingMode.HALF_UP);
+            int projectedCost;
+            if (draftablePlayer.getPlayer().getPosition().isPositional()) {
+                projectedCost = draftablePlayer.getAverageCost().multiply(scaleFactor) //
+                        .min(draftablePlayer.getAverageCost().add(MAX_COST_INCREASE)) //
+                        .setScale(0, RoundingMode.HALF_UP) //
+                        .intValue();
+            } else {
+                projectedCost = 1;
+            }
             log.info("{} original cost of {} is updated to {}", draftablePlayer.getPlayer().getName(),
-                    draftablePlayer.getAverageCost(), scaledCost);
-            draftablePlayer.setAverageCost(scaledCost);
-            newActualTotalMoney = newActualTotalMoney.add(scaledCost);
+                    draftablePlayer.getAverageCost(), projectedCost);
+            ProjectedAuctionValue projAV = new ProjectedAuctionValue();
+            projAV.setLeague(league);
+            projAV.setPlayer(draftablePlayer.getPlayer());
+            projAV.setCost(projectedCost);
+            projAVs.add(projAV);
+            totalProjectedCost += projectedCost;
         }
-        log.info("New actual money cost is {}", newActualTotalMoney);
+        log.info("New actual money cost is {}", totalProjectedCost);
+
+        log.info("Saving projected Auction Values");
+        int saveCount = projAuctionValueRepo.saveAll(projAVs).size();
+        log.info("Saved {} projected auction values", saveCount);
+
     }
 
     private void assertEnoughByPosition(List<AverageAuctionValue> avs, Position position, int minRequired) {
