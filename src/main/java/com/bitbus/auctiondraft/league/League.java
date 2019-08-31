@@ -14,6 +14,12 @@ import lombok.Data;
 @Data
 public class League {
 
+    public League() {}
+
+    public League(long id) {
+        this.id = id;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "league_id")
