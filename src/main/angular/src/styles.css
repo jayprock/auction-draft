@@ -18,3 +18,22 @@ body {
     color: #333;
     box-sizing: border-box;
 }
+
+.btn {
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 1.6rem;
+    background-color: rgb(26, 28, 98);
+    color: #fff;
+    border: 1px solid rgb(23, 25, 87);;
+    border-radius: 0.4rem;
+    box-shadow: 0.1rem 0.2rem 2rem #000;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.btn-container {
+    text-align: center;
+}

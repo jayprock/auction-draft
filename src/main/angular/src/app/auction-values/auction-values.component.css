@@ -20,6 +20,8 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     overflow-y: scroll;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 .auction-values__list {
     list-style-type: none;

@@ -15,4 +15,7 @@ export class ProjectedAuctionValueService {
     return this.http.get<ProjectedAuctionValue[]>(`${REST_PATHS.projections}/${leagueId}`);
   }
 
+  update(projectedAuctionValues: ProjectedAuctionValue[]) {
+    return this.http.put(REST_PATHS.projections, projectedAuctionValues);
+  }
 }

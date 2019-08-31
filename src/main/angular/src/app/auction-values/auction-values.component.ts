@@ -35,4 +35,8 @@ export class AuctionValuesComponent implements OnInit {
     return 2400 - totalDollars;
   }
 
+  save() {
+    this.projAuctionValueService.update(this.projAuctionValues).subscribe(result => console.log("Saved."));
+  }
+
 }
