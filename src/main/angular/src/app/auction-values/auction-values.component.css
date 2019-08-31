@@ -1,0 +1,37 @@
+.header1 {
+    text-align: center;
+    font-size: 5rem;
+}
+
+.header1 span {
+    display: block;
+}
+
+.header1--subtitle {
+    font-size: 2.5rem;
+}
+
+.auction-values {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50rem;
+    height: 70rem;
+    font-size: 1.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow-y: scroll;
+}
+.auction-values__list {
+    list-style-type: none;
+}
+
+.auction-values__list-item {
+    border-bottom: 1px solid #ccc;
+    padding: 1rem 6rem;
+}
+
+.auction-values__list-item input {
+    float: right;
+    padding: 0.5rem;
+    width: 6rem;
+}

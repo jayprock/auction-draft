@@ -1,1 +1,14 @@
-<p>auction-values works!</p>
+<h1 class="header1">
+    <span class="header1--primary">Auction Values</span>
+    <span class="header1--subtitle">Available Dollars: {{ getAvailableDollars() | currency:'USD':'symbol':'1.0' }}</span>
+</h1>
+<div class="auction-values">
+    <ul class="auction-values__list">
+        <li class="auction-values__list-item" *ngFor="let auctionValue of projAuctionValues">
+            <div class="form-group">
+                <label>{{auctionValue.player.name}}&nbsp;<span>({{auctionValue.player.team.abbreviation}} - {{auctionValue.player.position}})</span></label>
+                <input type="text" [(ngModel)]="auctionValue.cost">
+            </div>
+        </li>
+    </ul>
+</div>
